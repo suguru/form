@@ -6,6 +6,7 @@ package form
 
 import (
 	"bytes"
+	"net/url"
 	"reflect"
 	"testing"
 )
@@ -96,6 +97,56 @@ func TestEncode_KeepZero(t *testing.T) {
 			t.Errorf("KeepZeros(%#v).Encode(%#v): %s", c.z, c.b, err)
 		} else if s := w.String(); c.s != s {
 			t.Errorf("KeepZeros(%#v).Encode(%#v)\n want (%#v)\n have (%#v)", c.z, c.b, c.s, s)
+		}
+	}
+}
+
+func TestEncodeToStringKeepZero(t *testing.T) {
+
+	num := uint(0)
+
+	for _, c := range []struct {
+		b interface{}
+		s string
+	}{
+		{Thing1{"test", &num}, "name=test&num=0"},
+		{Thing3{"test", &num}, "name=test&num=0"},
+		{Thing4{"test", num}, "name=test&num=0"},
+		{Thing1{"", &num}, "num=0"},
+		{Thing2{"", num}, ""},
+		{Thing3{"", &num}, "name=&num=0"},
+		{Thing4{"", num}, "name=&num=0"},
+	} {
+
+		if s, err := EncodeToStringKeepZero(c.b); err != nil {
+			t.Errorf("EncodeToStringKeepZero(%#v): %s", c.b, err)
+		} else if c.s != s {
+			t.Errorf("EncodeToString(%#v)\n want (%#v)\n have (%#v)", c.b, c.s, s)
+		}
+	}
+}
+
+func TestEncodeToValuesKeepZero(t *testing.T) {
+
+	num := uint(0)
+
+	for _, c := range []struct {
+		b interface{}
+		v url.Values
+	}{
+		{Thing1{"test", &num}, url.Values{"name": []string{"test"}, "num": []string{"0"}}},
+		{Thing3{"test", &num}, url.Values{"name": []string{"test"}, "num": []string{"0"}}},
+		{Thing4{"test", num}, url.Values{"name": []string{"test"}, "num": []string{"0"}}},
+		{Thing1{"", &num}, url.Values{"num": []string{"0"}}},
+		{Thing2{"", num}, url.Values{}},
+		{Thing3{"", &num}, url.Values{"name": []string{""}, "num": []string{"0"}}},
+		{Thing4{"", num}, url.Values{"name": []string{""}, "num": []string{"0"}}},
+	} {
+
+		if v, err := EncodeToValuesKeepZero(c.b); err != nil {
+			t.Errorf("EncodeToValuesKeepZero(%#v): %s", c.b, err)
+		} else if !reflect.DeepEqual(c.v, v) {
+			t.Errorf("EncodeToValues(%#v)\n want (%#v)\n have (%#v)", c.b, c.v, v)
 		}
 	}
 }

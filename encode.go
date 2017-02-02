@@ -67,8 +67,17 @@ func (e Encoder) Encode(dst interface{}) error {
 
 // EncodeToString encodes dst as a form and returns it as a string.
 func EncodeToString(dst interface{}) (string, error) {
+	return encodeToString(dst, false)
+}
+
+// EncodeToStringKeepZero encodes dst as a form and returns it as a string. Same as EncodeToValues except it enode zero number to "0".
+func EncodeToStringKeepZero(dst interface{}) (string, error) {
+	return encodeToString(dst, true)
+}
+
+func encodeToString(dst interface{}, z bool) (string, error) {
 	v := reflect.ValueOf(dst)
-	n, err := encodeToNode(v, false)
+	n, err := encodeToNode(v, z)
 	if err != nil {
 		return "", err
 	}
@@ -78,8 +87,18 @@ func EncodeToString(dst interface{}) (string, error) {
 
 // EncodeToValues encodes dst as a form and returns it as Values.
 func EncodeToValues(dst interface{}) (url.Values, error) {
+	return encodeToValues(dst, false)
+}
+
+// EncodeToValuesKeepZero encodes dst as a form and returns it as Values. Same as EnodeToValues except it encode zero number to "0".
+func EncodeToValuesKeepZero(dst interface{}) (url.Values, error) {
+	return encodeToValues(dst, true)
+}
+
+// encodeToValues encodes dst as a form and returns it as Values.
+func encodeToValues(dst interface{}, z bool) (url.Values, error) {
 	v := reflect.ValueOf(dst)
-	n, err := encodeToNode(v, false)
+	n, err := encodeToNode(v, z)
 	if err != nil {
 		return nil, err
 	}
